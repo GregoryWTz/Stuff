@@ -43,15 +43,22 @@ KEYWORDS = [
 # Format: {"top": Y, "left": X, "width": W, "height": H}
 # Tip: run get_position.py first to find your coordinates
 WATCH_REGION = {
-    "top": 500,     # a bit above your click target (885)
-    "left": 700,    # a bit left of your click target (808)
-    "width": 800,   # covers enough of the channel width
-    "height": 500,  # covers enough chat messages
+    "top": 400,
+    "left": 800,
+    "width": 700,
+    "height": 400,
 }
 
-# Where to click when the keyword is found
-# Set this to the location of the Discord link/button
-CLICK_TARGET = (844, 872)   # (X, Y) in screen pixels
+# All coordinates to click when a keyword is found (clicked in order)
+# Add more rows to cover more positions, e.g. if the link can appear at different heights
+CLICK_TARGETS = [
+    (808, 860),   # slightly above
+    (808, 885),   # your main target
+    (808, 910),   # slightly below
+]
+
+# Delay between each click in the list (in seconds)
+CLICK_DELAY = 0.1  # 100ms between clicks
 
 # How often to scan the screen (in seconds)
 # Lower = faster reaction, higher = less CPU usage
@@ -88,7 +95,7 @@ def main():
     print("=" * 50)
     print(f"  Keywords    : {KEYWORDS}")
     print(f"  Watch region: {WATCH_REGION}")
-    print(f"  Click target: {CLICK_TARGET}")
+    print(f"  Click targets: {len(CLICK_TARGETS)} positions")
     print(f"  Scan rate   : every {SCAN_INTERVAL}s")
     print("  Press Ctrl+C to stop.\n")
 
@@ -114,10 +121,13 @@ def main():
             matched = next((kw for kw in KEYWORDS if kw.lower() in text_lower), None)
 
             if matched:
-                print(f"\n  ✅ Keyword '{matched}' detected! Clicking...")
-                pyautogui.click(CLICK_TARGET)
+                print(f"\n  ✅ Keyword '{matched}' detected! Clicking {len(CLICK_TARGETS)} positions...")
+                for i, target in enumerate(CLICK_TARGETS):
+                    pyautogui.click(target)
+                    print(f"  🖱️  Click {i+1}/{len(CLICK_TARGETS)} at {target}")
+                    if i < len(CLICK_TARGETS) - 1:
+                        time.sleep(CLICK_DELAY)
                 last_click_time = time.time()
-                print(f"  🖱️  Clicked at {CLICK_TARGET}")
             else:
                 print(f"\r  👀 Watching for {KEYWORDS}...              ", end="", flush=True)
 
